@@ -1,4 +1,5 @@
 import ollama
+import click
 
 REFERENCE_TEXT = 'resources/cat-facts.txt'
 EMBEDDING_MODEL = 'hf.co/CompendiumLabs/bge-base-en-v1.5-gguf'
@@ -7,7 +8,9 @@ LANGUAGE_MODEL = 'hf.co/bartowski/Llama-3.2-1B-Instruct-GGUF'
 INSTRUCTION_PREFIX = """You are a helpful chatbot.
 Use only the following pieces of context to answer the question. Don't make up any new information:"""
 
-def main():
+@click.command()
+@click.option('--model', help='Language model to use', default=LANGUAGE_MODEL)
+def main(model: str):
     in_memory_db = load_in_memory_db(REFERENCE_TEXT)
 
     while True:
@@ -25,7 +28,7 @@ def main():
         instruction_prompt = f"""{INSTRUCTION_PREFIX}\n{'\n'.join([f' - {chunk}' for chunk, _ in retrieved_knowledge])}"""
         
         stream = ollama.chat(
-            model=LANGUAGE_MODEL,
+            model=model,
             messages=[
                 {'role': 'system', 'content': instruction_prompt},
                 {'role': 'user', 'content': input_query},
