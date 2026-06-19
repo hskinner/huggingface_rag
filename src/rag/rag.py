@@ -37,9 +37,11 @@ def main():
         print('Chatbot response:')
         for chunk in stream:
             print(chunk['message']['content'], end='', flush=True)
+        
+        print('\n')
 
 
-def load_in_memory_db(filename) -> list[tuple[str, str]]:
+def load_in_memory_db(filename: str) -> list[tuple[str, list[float]]]:
     in_memory_db = []
     dataset = []
 
@@ -48,13 +50,13 @@ def load_in_memory_db(filename) -> list[tuple[str, str]]:
         print(f'Loaded {len(dataset)} entries')
 
     for line in dataset:
-        embedding = ollama.embed(model=EMBEDDING_MODEL, input=line)
+        embedding = ollama.embed(model=EMBEDDING_MODEL, input=line)['embeddings'][0]
         in_memory_db.append((line, embedding))
     
     return in_memory_db
 
 
-def cosine_similarity(a, b):
+def cosine_similarity(a: list[float], b: list[float]) -> float:
     dot_product = sum([x * y for x, y in zip(a, b)])
     norm_a = sum([x ** 2 for x in a]) ** 0.5
     norm_b = sum([x ** 2 for x in b]) ** 0.5
@@ -76,3 +78,7 @@ def retrieve(query: str, in_memory_db: list[tuple[str, str]], top_n: int=3) -> l
     
     # finally, return the top N most relevant chunks
     return similarities[:top_n]
+
+
+if __name__ == '__main__':
+    main()
